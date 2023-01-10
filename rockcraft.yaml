@@ -46,7 +46,7 @@ parts:
           useradd -R $CRAFT_OVERLAY -M -r -g zookeeper -u 1000 zookeeper
         override-prime: |
           craftctl default
-          # Give permission to the needed folder
+          # Give permission to the required folder
           chown -R 1000:1000 opt/zookeeper
           chown -R 1000:1000 datalog
           chown -R 1000:1000 data
