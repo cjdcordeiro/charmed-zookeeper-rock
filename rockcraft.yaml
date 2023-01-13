@@ -1,3 +1,5 @@
+# Copyright 2023 Canonical Ltd.
+# See LICENSE file for licensing details.
 name: zookeeper
 summary: Apache Zookeeper in a ROCK.
 description: |
@@ -5,9 +7,11 @@ description: |
   information, naming, providing distributed synchronization, and 
   providing group services.
 version: "3.6.4"
-base: ubuntu:20.04
+base: ubuntu:22.04
 license: Apache-2.0
+
 cmd: [/opt/zookeeper/bin/zkServer.sh, --config, /conf, start-foreground]
+
 platforms:
   amd64:  # Make sure this value matches your computer's architecture
 
@@ -34,3 +38,17 @@ parts:
       sed -i "s:dataDir=/tmp/zookeeper:dataDir=/data:g" $CRAFT_PART_INSTALL/conf/zoo.cfg
       echo "dataLogDir=/datalog" >> $CRAFT_PART_INSTALL/conf/zoo.cfg
       ln -s /usr/lib/jvm/java-8-openjdk-amd64/bin/keytool $CRAFT_PART_INSTALL/usr/bin/keytool
+  
+  non-root-user:
+        plugin: nil
+        after: [zookeeper]
+        overlay-script: |
+          # Create a user in the $CRAFT_OVERLAY chroot
+          groupadd -R $CRAFT_OVERLAY -g 1000 zookeeper
+          useradd -R $CRAFT_OVERLAY -M -r -g zookeeper -u 1000 zookeeper
+        override-prime: |
+          craftctl default
+          # Give permission to the required folder
+          chown -R 1000:1000 opt/zookeeper
+          chown -R 1000:1000 datalog
+          chown -R 1000:1000 data
