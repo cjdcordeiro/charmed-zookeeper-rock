@@ -3,14 +3,13 @@
 name: zookeeper
 summary: Apache Zookeeper in a ROCK.
 description: |
-  ZooKeeper is a centralized service for maintaining configuration 
-  information, naming, providing distributed synchronization, and 
+  ZooKeeper is a centralized service for maintaining configuration
+  information, naming, providing distributed synchronization, and
   providing group services.
 version: "3.6.4"
 base: ubuntu:22.04
 license: Apache-2.0
 
-cmd: [/opt/zookeeper/bin/zkServer.sh, --config, /conf, start-foreground]
 
 platforms:
   amd64:  # Make sure this value matches your computer's architecture
@@ -22,26 +21,46 @@ env:
 parts:
   zookeeper:
     plugin: nil
-    source: https://dlcdn.apache.org/zookeeper/zookeeper-3.6.4/apache-zookeeper-3.6.4-bin.tar.gz
     stage-packages:
-    - openjdk-8-jre-headless
+      - openjdk-8-jre-headless
     build-environment:
-    - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64/
+      - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64/
+    stage-snaps:
+      - zookeeper/3.6/edge
     override-build: |
-      mkdir -p $CRAFT_PART_INSTALL/opt/zookeeper/logs
-      mkdir $CRAFT_PART_INSTALL/data
-      mkdir $CRAFT_PART_INSTALL/datalog
-      mkdir $CRAFT_PART_INSTALL/conf
-      cp -r ./* $CRAFT_PART_INSTALL/opt/zookeeper
-      cp -r ./conf $CRAFT_PART_INSTALL
-      cp conf/zoo_sample.cfg $CRAFT_PART_INSTALL/conf/zoo.cfg
-      sed -i "s:dataDir=/tmp/zookeeper:dataDir=/data:g" $CRAFT_PART_INSTALL/conf/zoo.cfg
-      echo "dataLogDir=/datalog" >> $CRAFT_PART_INSTALL/conf/zoo.cfg
-      ln -s /usr/lib/jvm/java-8-openjdk-amd64/bin/keytool $CRAFT_PART_INSTALL/usr/bin/keytool
-  
+      rm -rf usr/
+    organize:
+      LICENSE.txt : opt/zookeeper/LICENSE.txt
+      NOTICE.txt : opt/zookeeper/NOTICE.txt
+      README.md : opt/zookeeper/README.md
+      README_packaging.md : opt/zookeeper/README_packaging.md
+      bin : opt/zookeeper/bin
+      conf : opt/zookeeper/conf
+      docs : opt/zookeeper/docs
+      etc : opt/zookeeper/etc
+      lib : opt/zookeeper/lib
+      with_config.sh : opt/zookeeper/with_config.sh
+      jmx_prometheus_javaagent.jar : opt/zookeeper/jmx_prometheus_javaagent.jar
+      jmx_prometheus.yaml :  opt/zookeeper/conf/jmx_prometheus.yaml
+  java:
+    plugin: nil
+    after: [zookeeper]
+    stage-packages:
+      - openjdk-8-jre-headless
+    build-environment:
+      - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64/
+    override-build: |
+      ln -s /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+        $CRAFT_PART_INSTALL/usr/bin/java
+      ln -s /usr/lib/jvm/java-8-openjdk-amd64/bin/keytool \
+        $CRAFT_PART_INSTALL/usr/bin/keytool
+    override-prime: |
+      craftctl default
+      rm -vf usr/lib/jvm/java-8-openjdk-amd64/jre/lib/security/cacerts
+
   non-root-user:
         plugin: nil
-        after: [zookeeper]
+        after: [java]
         overlay-script: |
           # Create a user in the $CRAFT_OVERLAY chroot
           groupadd -R $CRAFT_OVERLAY -g 1000 zookeeper
@@ -50,5 +69,3 @@ parts:
           craftctl default
           # Give permission to the required folder
           chown -R 1000:1000 opt/zookeeper
-          chown -R 1000:1000 datalog
-          chown -R 1000:1000 data
