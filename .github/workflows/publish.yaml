@@ -44,7 +44,7 @@ jobs:
           base=$(yq '(.base|split(":"))[1]' rockcraft.yaml)
           risk=edge
           tag=${version}-${base}_${risk}
-          channel=$(${{ github.ref_name }} | cut -d "-" -f 1)
+          channel=$(echo ${{ github.ref_name }} | cut -d "-" -f 1)
 
           sudo skopeo --insecure-policy copy \
             oci-archive:charmed-zookeeper_${tag}_amd64.rock \
