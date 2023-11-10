@@ -17,12 +17,20 @@ license: Apache-2.0  # your application's SPDX license
 platforms:  # The platforms this ROCK should be built on and run on
   amd64:
 
-env:
-  - JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
-  - ZOO_LOG_DIR: /var/log/zookeeper
-  - ZOO_LOG4J_PROP: INFO,CONSOLE,ROLLINGFILE
-  - ZOO_LOG_FILE: zookeeper.log
-  - ZOOCFGDIR: /etc/zookeeper
+environment:
+  JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+  ZOO_LOG_DIR: /var/log/zookeeper
+  ZOO_LOG4J_PROP: INFO,CONSOLE,ROLLINGFILE
+  ZOO_LOG_FILE: zookeeper.log
+  ZOOCFGDIR: /etc/zookeeper
+
+services:
+  zookeeper:
+    override: replace
+    command: /bin/zkServer.sh --config /etc/zookeeper start-foreground
+    startup: enabled
+    user: zookeeper
+    group: zookeeper
 
 parts:
   zookeeper:
@@ -46,6 +54,10 @@ parts:
       mkdir -p $CRAFT_PART_INSTALL/var/log/zookeeper/
       mkdir -p $CRAFT_PART_INSTALL/opt/zookeeper/
       mkdir -p $CRAFT_PART_INSTALL/etc/zookeeper/
+
+      cp $CRAFT_PART_INSTALL/conf/zoo_sample.cfg \
+        $CRAFT_PART_INSTALL/etc/zookeeper/zoo.cfg
+      rm -rf $CRAFT_PART_INSTALL/conf
     override-prime: |
       craftctl default
       rm -vf usr/lib/jvm/java-17-openjdk-amd64/lib/security/cacerts

@@ -39,20 +39,21 @@ jobs:
           password: ${{ secrets.GHCR_TOKEN }}
       - name: Import and push to GHCR
         run: |
-          app_version=$(yq '.version' rockcraft.yaml)
           version=$(yq '(.version|split("-"))[0]' rockcraft.yaml)
           base=$(yq '(.base|split(":"))[1]' rockcraft.yaml)
           risk=edge
           tag=${version}-${base}_${risk}
           channel=$(echo ${{ github.ref_name }} | cut -d "-" -f 1)
 
+          ROCK_FILE=${{ needs.build.outputs.rock }}
+
           sudo skopeo --insecure-policy copy \
-            oci-archive:charmed-zookeeper_${tag}_amd64.rock \
+            oci-archive:$ROCK_FILE \
             docker-daemon:ghcr.io/canonical/charmed-zookeeper:${tag}
 
           docker tag \
             ghcr.io/canonical/charmed-zookeeper:${tag} \
-            ghcr.io/canonical/charmed-zookeeper:${channel}-${risk}
+            ghcr.io/canonical/charmed-zookeeper:${channel}_${risk}
 
           docker push ghcr.io/canonical/charmed-zookeeper:${tag}
-          docker push ghcr.io/canonical/charmed-zookeeper:${channel}-${risk}
+          docker push ghcr.io/canonical/charmed-zookeeper:${channel}_${risk}
