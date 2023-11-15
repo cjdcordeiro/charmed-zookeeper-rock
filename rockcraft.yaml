@@ -2,7 +2,7 @@
 # See LICENSE file for licensing details.
 ---
 name: charmed-zookeeper  # the name of your ROCK
-base: ubuntu:22.04  # the base environment for this ROCK
+base: ubuntu@22.04  # the base environment for this ROCK
 version: '3.6.4'  # just for humans. Semantic versioning is recommended
 summary: Charmed ZooKeeper ROCK OCI  # 79 char long summary
 description: |

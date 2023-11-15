@@ -40,7 +40,7 @@ jobs:
       - name: Import and push to GHCR
         run: |
           version=$(yq '(.version|split("-"))[0]' rockcraft.yaml)
-          base=$(yq '(.base|split(":"))[1]' rockcraft.yaml)
+          base=$(yq '(.base|split("@"))[1]' rockcraft.yaml)
           risk=edge
           tag=${version}-${base}_${risk}
           channel=$(echo ${{ github.ref_name }} | cut -d "-" -f 1)
