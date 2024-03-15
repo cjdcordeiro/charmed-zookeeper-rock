@@ -3,7 +3,7 @@
 ---
 name: charmed-zookeeper  # the name of your ROCK
 base: ubuntu@22.04  # the base environment for this ROCK
-version: '3.8.2'  # just for humans. Semantic versioning is recommended
+version: '3.8.4'  # just for humans. Semantic versioning is recommended
 summary: Charmed ZooKeeper ROCK OCI  # 79 char long summary
 description: |
   This is an OCI image that bundles Apache ZooKeeper together with other tools
@@ -18,7 +18,7 @@ platforms:  # The platforms this ROCK should be built on and run on
   amd64:
 
 environment:
-  JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+  JAVA_HOME: /usr/lib/jvm/java-18-openjdk-amd64
   ZOO_LOG_DIR: /var/log/zookeeper
   ZOOCFGDIR: /etc/zookeeper
 
@@ -36,17 +36,17 @@ parts:
   zookeeper:
     plugin: nil
     stage-packages:
-      - openjdk-8-jre-headless
+      - openjdk-18-jre-headless
       - libpsl5
       - curl
     build-environment:
-      - JAVA_HOME: /usr/lib/jvm/java-8-openjdk-amd64
+      - JAVA_HOME: /usr/lib/jvm/java-18-openjdk-amd64
     stage-snaps:
       - charmed-zookeeper/3/edge
     override-build: |
-      ln -s /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
+      ln -s /usr/lib/jvm/java-18-openjdk-amd64/bin/java \
         $CRAFT_PART_INSTALL/usr/bin/java
-      ln -s /usr/lib/jvm/java-8-openjdk-amd64/bin/keytool \
+      ln -s /usr/lib/jvm/java-18-openjdk-amd64/bin/keytool \
         $CRAFT_PART_INSTALL/usr/bin/keytool
 
       mkdir -p $CRAFT_PART_INSTALL/var/lib/pebble/default/
@@ -60,7 +60,7 @@ parts:
       rm -rf $CRAFT_PART_INSTALL/opt/zookeeper/conf
     override-prime: |
       craftctl default
-      rm -vf usr/lib/jvm/java-8-openjdk-amd64/lib/security/cacerts
+      rm -vf usr/lib/jvm/java-18-openjdk-amd64/lib/security/cacerts
   non-root-user:
     plugin: nil
     after: [zookeeper]
